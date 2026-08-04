@@ -52,12 +52,12 @@ export default function App() {
       <Route
         path="/super-admin/users"
         element={
-          <ProtectedRoute roles={["super_admin"]}>
+<ProtectedRoute roles={["super_admin"]}>
             <Layout><UsersPage title="All Users" /></Layout>
           </ProtectedRoute>
         }
       />
-<Route
+      <Route
         path="/super-admin/payments"
         element={
           <ProtectedRoute roles={["super_admin"]}>
@@ -107,6 +107,14 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/manager/analytics"
+        element={
+          <ProtectedRoute roles={["manager"]}>
+            <Layout><AnalyticsDashboard title="Analytics" /></Layout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* Asst Manager (Admin-2) */}
       <Route
@@ -141,6 +149,14 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/asst-manager/analytics"
+        element={
+          <ProtectedRoute roles={["asst_manager"]}>
+            <Layout><AnalyticsDashboard title="Analytics" /></Layout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* Team Lead */}
       <Route
@@ -159,6 +175,14 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/team-lead/analytics"
+        element={
+          <ProtectedRoute roles={["team_lead"]}>
+            <Layout><AnalyticsDashboard title="Analytics" /></Layout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* Employee */}
       <Route
@@ -174,6 +198,14 @@ export default function App() {
         element={
           <ProtectedRoute roles={["employee"]}>
             <Layout><LeadsPage title="My Leads" /></Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employee/analytics"
+        element={
+          <ProtectedRoute roles={["employee"]}>
+            <Layout><AnalyticsDashboard title="Analytics" /></Layout>
           </ProtectedRoute>
         }
       />
