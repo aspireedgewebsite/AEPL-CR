@@ -41,6 +41,11 @@ const leadSchema = new mongoose.Schema(
     nextFollowUpDate: { type: Date, default: null },
     leadScore: { type: String, enum: ["hot", "warm", "cold"], default: "cold" },
 
+    // Operation handoff - Payment/Invoice queue (partial payments)
+    invoiceRequested: { type: Boolean, default: false },
+    invoiceRequestedAt: { type: Date, default: null },
+    invoiceRequestedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+
     // Operation handoff - LMS record
     lmsRequested: { type: Boolean, default: false },
     lmsRequestedAt: { type: Date, default: null },

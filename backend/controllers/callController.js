@@ -1,5 +1,6 @@
 const CallLog = require("../models/CallLog");
 const Lead = require("../models/Lead");
+const Payment = require("../models/Payment");
 
 const deriveLeadScore = (leadResponse = "", statusAfterCall = "") => {
   const responseText = String(leadResponse).toLowerCase();
@@ -9,10 +10,13 @@ const deriveLeadScore = (leadResponse = "", statusAfterCall = "") => {
   return "cold";
 };
 
-// POST /api/calls   { leadId, leadResponse, remark, nextFollowUpDate, statusAfterCall }
+// POST /api/calls   { leadId, leadResponse, remark, nextFollowUpDate, statusAfterCall,
+//                     totalAgreedAmount, paidNow, program, domain, utr }
+// When statusAfterCall === "converted", the caller may also supply the final agreed
+// amount and an amount paid now (creates the first payment installment).
 const createCallLog = async (req, res) => {
   try {
-    const { leadId, leadResponse, remark, nextFollowUpDate, statusAfterCall } = req.body;
+    const { leadId, leadResponse, remark, nextFollowUpDate, statusAfterCall, totalAgreedAmount, paidNow, program, domain, utr } = req.body;
     if (!leadId || !leadResponse) {
       return res.status(400).json({ message: "leadId and leadResponse are required" });
     }
@@ -35,12 +39,39 @@ const createCallLog = async (req, res) => {
 
     if (statusAfterCall) {
       lead.status = statusAfterCall;
-      if (statusAfterCall === "converted") lead.converted = true;
+      if (statusAfterCall === "converted") {
+        lead.converted = true;
+        // Capture the final agreed amount (only if not already set)
+        if (totalAgreedAmount) {
+          lead.totalAgreedAmount = Number(totalAgreedAmount);
+        }
+        // If an amount is paid now, create the first payment installment
+        if (paidNow && Number(paidNow) > 0) {
+          const payAmount = Number(paidNow);
+          const nextInstallment = lead.installmentsCount + 1;
+          if (nextInstallment <= 10) {
+            await Payment.create({
+              leadId: lead._id,
+              installmentNumber: nextInstallment,
+              amount: payAmount,
+              program: program || lead.program || "",
+              domain: domain || lead.domain || "",
+              utr: utr || "",
+              paymentDate: new Date(),
+              submittedBy: req.user._id,
+            });
+            lead.totalPaidAmount += payAmount;
+            lead.installmentsCount = nextInstallment;
+            if (program && !lead.program) lead.program = program;
+            if (domain && !lead.domain) lead.domain = domain;
+          }
+        }
+      }
     }
 
     await lead.save();
 
-    res.status(201).json({ callLog: log });
+    res.status(201).json({ callLog: log, lead });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

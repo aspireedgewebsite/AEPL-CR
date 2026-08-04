@@ -93,6 +93,58 @@ const getMonthlyStats = async (req, res) => {
   }
 };
 
+// GET /api/dashboard/daily?month=8&year=2026  -> super_admin only, day-wise leads/conversions/revenue for a month
+const getDailyStats = async (req, res) => {
+  try {
+    const year = Number(req.query.year) || new Date().getFullYear();
+    const month = Number(req.query.month) || new Date().getMonth() + 1;
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 1);
+
+    const leadsByDay = await Lead.aggregate([
+      { $match: { createdAt: { $gte: start, $lt: end } } },
+      {
+        $group: {
+          _id: { $dayOfMonth: "$createdAt" },
+          totalLeads: { $sum: 1 },
+          converted: { $sum: { $cond: ["$converted", 1, 0] } },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const revenueByDay = await Payment.aggregate([
+      { $match: { paymentDate: { $gte: start, $lt: end } } },
+      {
+        $group: {
+          _id: { $dayOfMonth: "$paymentDate" },
+          revenue: { $sum: "$amount" },
+          paymentCount: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+    const data = days.map((d) => {
+      const l = leadsByDay.find((x) => x._id === d);
+      const r = revenueByDay.find((x) => x._id === d);
+      return {
+        day: d,
+        totalLeads: l ? l.totalLeads : 0,
+        converted: l ? l.converted : 0,
+        revenue: r ? r.revenue : 0,
+        paymentCount: r ? r.paymentCount : 0,
+      };
+    });
+
+    res.json({ year, month, data });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // GET /api/dashboard/yearly  -> super_admin only, year-wise totals (last 5 years)
 const getYearlyStats = async (req, res) => {
   try {
@@ -127,4 +179,5 @@ module.exports = {
   getSummary,
   getMonthlyStats,
   getYearlyStats,
+  getDailyStats,
 };

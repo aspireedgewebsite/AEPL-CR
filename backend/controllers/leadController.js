@@ -377,6 +377,34 @@ const sendToOperationLMS = async (req, res) => {
   }
 };
 
+// PUT /api/leads/:id/send-to-invoice
+// manager / asst_manager mark a converted lead as sent to the Payment & Invoice queue.
+// This is distinct from the LMS handoff — it is used when there are partial payments
+// that need invoicing. The lead still shows in the sender's dashboard (locked for edits).
+const sendToPaymentInvoice = async (req, res) => {
+  try {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+    if (!lead.converted) {
+      return res.status(400).json({ message: "Lead must be converted before sending to Payment & Invoice" });
+    }
+    if (!["manager", "asst_manager"].includes(req.user.role)) {
+      return res.status(403).json({ message: "Not allowed to send this lead to Payment & Invoice" });
+    }
+    if (lead.invoiceRequested) {
+      return res.status(400).json({ message: "Lead is already sent to Payment & Invoice" });
+    }
+
+    lead.invoiceRequested = true;
+    lead.invoiceRequestedAt = new Date();
+    lead.invoiceRequestedBy = req.user._id;
+    await lead.save();
+    res.json({ lead });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // PUT /api/leads/:id/lms-action   { action: "offerLetter" | "lmsAccess" | "certificate" }
 const updateLmsAction = async (req, res) => {
   try {
@@ -418,5 +446,6 @@ module.exports = {
   restoreLead,
   updateLeadStatus,
   sendToOperationLMS,
+  sendToPaymentInvoice,
   updateLmsAction,
 };

@@ -52,7 +52,7 @@ export default function App() {
       <Route
         path="/super-admin/users"
         element={
-<ProtectedRoute roles={["super_admin"]}>
+          <ProtectedRoute roles={["super_admin"]}>
             <Layout><UsersPage title="All Users" /></Layout>
           </ProtectedRoute>
         }

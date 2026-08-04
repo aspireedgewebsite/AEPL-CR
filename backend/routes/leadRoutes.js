@@ -15,6 +15,7 @@ const {
   restoreLead,
   updateLeadStatus,
   sendToOperationLMS,
+  sendToPaymentInvoice,
   updateLmsAction,
 } = require("../controllers/leadController");
 
@@ -36,6 +37,7 @@ router.put("/:id/restore", allowRoles("super_admin"), restoreLead);
 router.delete("/:id", allowRoles("super_admin", "manager"), deleteLead);
 router.put("/:id/status", updateLeadStatus);
 router.put("/:id/send-to-lms", allowRoles("super_admin", "manager", "asst_manager", "team_lead", "employee"), sendToOperationLMS);
+router.put("/:id/send-to-invoice", allowRoles("super_admin", "manager", "asst_manager"), sendToPaymentInvoice);
 router.put("/:id/lms-action", allowRoles("super_admin", "operation"), updateLmsAction);
 
 module.exports = router;

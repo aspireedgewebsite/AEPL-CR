@@ -6,11 +6,18 @@
 - [x] Flag: ActivityLog not written by any controller
 - [x] Flag: Target concept already exists (`User.monthlyTarget`)
 
-## Implementation order
-- [ ] 1. Fix Lead model: add `nextFollowUpDate` field + index
-- [ ] 2. Create `analyticsController.js` (overdue/due-today, funnel, leaderboard, source, target)
-- [ ] 3. Create `analyticsRoutes.js` + mount in `server.js`
-- [ ] 4. Remove relocated analytics from `dashboardController.js` + `dashboardRoutes.js`
-- [ ] 5. Frontend: wire AnalyticsDashboard into App.jsx + Sidebar link
-- [ ] 6. Frontend: Sidebar overdue/due-today badge
-- [ ] 7. Verify per item: `node --check` + `npm run build`
+## Implementation status
+- [x] 1. Fix Lead model: add `nextFollowUpDate` field + remove duplicate fields
+- [x] 2. Create `analyticsController.js` (follow-up alerts, funnel, leaderboard, source, target)
+- [x] 3. Create `analyticsRoutes.js` + mount in `server.js` (`/api/analytics`)
+- [x] 4. Frontend: wire AnalyticsDashboard into App.jsx (all roles) + Sidebar links
+- [x] 5. Frontend: Sidebar overdue/due-today badge (from `/api/analytics/followups`)
+- [x] 6. Frontend: AnalyticsDashboard consumes `/api/analytics/*` endpoints
+- [x] 7. Fix LeadDetailModal assignment dropdown (show all eligible users)
+- [x] 8. Verify: `node --check` on backend files (PASS)
+- [x] 9. Verify: `npm run build` in frontend (started/compiling)
+
+## Notes for user
+- ActivityLog model/route exist but NO controller writes entries (scaffolding only).
+- The "target" concept already exists via `User.monthlyTarget` — no new Target model needed.
+- `nextFollowUpDate` was missing from the Lead schema; added it so callController.ts writes and analytics reads actually persist.

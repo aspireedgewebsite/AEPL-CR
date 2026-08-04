@@ -12,7 +12,6 @@ export default function LeadDetailModal({ lead, onClose, onUpdated, onDeleted })
   const [calls, setCalls] = useState([]);
   const [payments, setPayments] = useState([]);
   const [assignOptions, setAssignOptions] = useState([]);
-  const [usedEmployeeIds, setUsedEmployeeIds] = useState([]);
   const [error, setError] = useState("");
 
   const refreshLead = async () => {
@@ -29,31 +28,9 @@ export default function LeadDetailModal({ lead, onClose, onUpdated, onDeleted })
 
     if (roleToFetch) {
       api.get(`/users?role=${roleToFetch}`).then((r) => {
-        const options = r.data.users;
-        api.get("/leads").then((leadRes) => {
-          const assignedIds = new Set(
-            leadRes.data.leads
-              .filter((lead) => {
-                if (user.role === "manager") return lead.asstManagerId && lead.asstManagerId._id;
-                if (user.role === "asst_manager") return lead.teamLeadId && lead.teamLeadId._id;
-                if (user.role === "team_lead") return lead.employeeId && lead.employeeId._id;
-                return false;
-              })
-              .map((lead) => {
-                if (user.role === "manager") return lead.asstManagerId._id;
-                if (user.role === "asst_manager") return lead.teamLeadId._id;
-                if (user.role === "team_lead") return lead.employeeId._id;
-                return null;
-              })
-          );
-
-          if (user.role === "team_lead") {
-            setUsedEmployeeIds([...assignedIds]);
-            setAssignOptions(options.filter((opt) => !assignedIds.has(opt._id)));
-          } else {
-            setAssignOptions(options.filter((opt) => !assignedIds.has(opt._id)));
-          }
-        });
+        // Show ALL eligible users in the role. A user who already has other leads
+        // can still be assigned NEW leads (only the CURRENT lead cannot be reassigned).
+        setAssignOptions(r.data.users);
       });
     }
   }, [current._id, user.role]);
@@ -345,3 +322,4 @@ function Info({ label, value }) {
     </div>
   );
 }
+

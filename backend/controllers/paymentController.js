@@ -80,7 +80,7 @@ const getOperationPayments = async (req, res) => {
   try {
     const payments = await Payment.find({ sentToOperation: true })
       .sort({ sentToOperationAt: -1 })
-      .populate("leadId", "name mobile email program domain totalPaidAmount")
+      .populate("leadId", "name mobile email program domain totalPaidAmount totalAgreedAmount")
       .populate("submittedBy sentToOperationBy", "name role");
     res.json({ payments });
   } catch (err) {
