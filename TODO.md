@@ -34,3 +34,9 @@
 - [x] 15. Backend `updateUser`: added password-reset support (super_admin only) so an edit modal can reset a user's login password.
 - [x] 16. Frontend: created `UserEditModal.jsx` to edit name, phone, team name (asst_manager), monthly target, and optional password reset.
 - [x] 17. Frontend `UsersPage.jsx`: added an "Edit" button (super_admin) next to Delete, and wired the edit modal.
+
+## Round 9 — Deleted users can no longer log in
+
+- [x] 18. Backend `authController.login`: login query now filters `isDeleted: false`, so a deleted user's credentials are rejected.
+- [x] 19. Backend `middleware/auth.js` (protect): now rejects users where `isDeleted` is true, so a deleted user's existing token is invalidated.
+- [x] 20. Backend `userController.deleteUser`: now also sets `isActive = false` on deletion (defensive), so even a cached token/user is immediately deactivated.

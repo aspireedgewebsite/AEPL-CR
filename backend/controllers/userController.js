@@ -172,6 +172,7 @@ const deleteUser = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
     user.isDeleted = true;
+    user.isActive = false;
     user.deletedAt = new Date();
     await user.save();
     res.json({ message: "User deleted" });
