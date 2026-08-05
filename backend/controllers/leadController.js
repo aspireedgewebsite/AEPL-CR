@@ -110,10 +110,15 @@ const bulkUploadLeads = async (req, res) => {
     const filePath = req.file.path;
     const ext = path.extname(req.file.originalname).toLowerCase();
 
-    let rows = [];
-    if (ext === ".csv") {
+let rows = [];
+    if (ext === ".csv" || ext === ".txt" || ext === ".tsv") {
       const content = fs.readFileSync(filePath, "utf8");
-      rows = parse(content, { columns: true, skip_empty_lines: true, trim: true });
+      // Auto-detect delimiter: tab-separated files (pasted from spreadsheets) vs commas.
+      const firstLine = content.split(/\r?\n/).find((line) => line.trim().length > 0) || "";
+      const tabCount = (firstLine.match(/\t/g) || []).length;
+      const commaCount = (firstLine.match(/,/g) || []).length;
+      const delimiter = tabCount > commaCount ? "\t" : ",";
+      rows = parse(content, { columns: true, skip_empty_lines: true, trim: true, delimiter });
     } else {
       const wb = XLSX.readFile(filePath);
       const sheet = wb.Sheets[wb.SheetNames[0]];
@@ -135,7 +140,7 @@ const bulkUploadLeads = async (req, res) => {
         errors.push({ row: idx + 2, message: "Missing name or mobile" });
         return;
       }
-      const mobile = String(row.mobile).trim();
+const mobile = String(row.mobile).trim().replace(/\s+/g, "");
       const email = row.email ? String(row.email).trim().toLowerCase() : "";
       if (mobile || email) {
         const duplicate = docs.find((doc) => doc.mobile === mobile || doc.email === email);
