@@ -64,7 +64,9 @@ async function applyLeadAssignment(lead, actor, body = {}) {
     return;
   }
 
-  if (actor.role === "super_admin") {
+if (actor.role === "super_admin") {
+    const { managerId } = body;
+    if (managerId) lead.managerId = managerId;
     if (asstManagerId) lead.asstManagerId = asstManagerId;
     if (teamLeadId) lead.teamLeadId = teamLeadId;
     if (employeeId) lead.employeeId = employeeId;

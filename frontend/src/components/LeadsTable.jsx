@@ -22,7 +22,7 @@ export default function LeadsTable({ leads, onOpen, selectedLeadIds = [], onTogg
     <div className="card overflow-hidden">
       <table className="w-full text-sm">
         <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
-          <tr>
+<tr>
             <th className="text-left px-3 py-3 w-10">
               <input
                 type="checkbox"
@@ -37,6 +37,7 @@ export default function LeadsTable({ leads, onOpen, selectedLeadIds = [], onTogg
                 }}
               />
             </th>
+            <th className="text-left px-3 py-3 w-10">#</th>
             <th className="text-left px-4 py-3">Name</th>
             <th className="text-left px-4 py-3">Mobile</th>
             <th className="text-left px-4 py-3">Program / Domain</th>
@@ -51,8 +52,8 @@ export default function LeadsTable({ leads, onOpen, selectedLeadIds = [], onTogg
             <th className="text-left px-4 py-3">Created</th>
           </tr>
         </thead>
-        <tbody>
-          {leads.map((lead) => (
+<tbody>
+          {leads.map((lead, index) => (
             <tr
               key={lead._id}
               onClick={() => onOpen(lead)}
@@ -66,6 +67,7 @@ export default function LeadsTable({ leads, onOpen, selectedLeadIds = [], onTogg
                   onChange={() => onToggleSelect && onToggleSelect(lead._id)}
                 />
               </td>
+              <td className="px-3 py-3 text-slate-400">{index + 1}</td>
               <td className="px-4 py-3 font-medium text-ink">{lead.name}</td>
               <td className="px-4 py-3 text-slate-600">{lead.mobile}</td>
               <td className="px-4 py-3 text-slate-600">

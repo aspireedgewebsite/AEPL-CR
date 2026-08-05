@@ -9,9 +9,21 @@ const TARGET_ROLE_BY_USER = {
   team_lead: { role: "employee", label: "Employee" },
 };
 
+// Super admin can assign to any level in the hierarchy.
+const SUPER_ADMIN_ROLES = [
+  { role: "manager", label: "Manager", field: "managerId" },
+  { role: "asst_manager", label: "Asst. Manager", field: "asstManagerId" },
+  { role: "team_lead", label: "Team Lead", field: "teamLeadId" },
+  { role: "employee", label: "Employee", field: "employeeId" },
+];
+
 export default function BulkAssignModal({ leadIds, onClose, onDone }) {
   const { user } = useAuth();
-  const target = TARGET_ROLE_BY_USER[user.role] || null;
+  const isSuperAdmin = user.role === "super_admin";
+  const [targetRole, setTargetRole] = useState(isSuperAdmin ? "manager" : null);
+  const target = isSuperAdmin
+    ? SUPER_ADMIN_ROLES.find((r) => r.role === targetRole)
+    : TARGET_ROLE_BY_USER[user.role] || null;
   const [options, setOptions] = useState([]);
   const [selected, setSelected] = useState("");
   const [loading, setLoading] = useState(true);
@@ -19,15 +31,17 @@ export default function BulkAssignModal({ leadIds, onClose, onDone }) {
   const [error, setError] = useState("");
 
   const payloadKey = useMemo(() => {
+    if (isSuperAdmin) return target?.field || null;
     if (user.role === "manager") return "asstManagerId";
     if (user.role === "asst_manager") return "teamLeadId";
     if (user.role === "team_lead") return "employeeId";
     return null;
-  }, [user.role]);
+  }, [isSuperAdmin, user.role, target]);
 
   useEffect(() => {
     if (!target) return;
     setLoading(true);
+    setSelected("");
     Promise.all([
       api.get("/users", { params: { role: target.role } }),
       api.get("/leads"),
@@ -36,15 +50,17 @@ export default function BulkAssignModal({ leadIds, onClose, onDone }) {
         const assignedIds = new Set(
           leadRes.data.leads
             .filter((lead) => {
-              if (user.role === "manager") return lead.asstManagerId && lead.asstManagerId._id;
-              if (user.role === "asst_manager") return lead.teamLeadId && lead.teamLeadId._id;
-              if (user.role === "team_lead") return lead.employeeId && lead.employeeId._id;
+              if (target.field === "managerId") return lead.managerId && lead.managerId._id;
+              if (target.field === "asstManagerId") return lead.asstManagerId && lead.asstManagerId._id;
+              if (target.field === "teamLeadId") return lead.teamLeadId && lead.teamLeadId._id;
+              if (target.field === "employeeId") return lead.employeeId && lead.employeeId._id;
               return false;
             })
             .map((lead) => {
-              if (user.role === "manager") return lead.asstManagerId._id;
-              if (user.role === "asst_manager") return lead.teamLeadId._id;
-              if (user.role === "team_lead") return lead.employeeId._id;
+              if (target.field === "managerId") return lead.managerId._id;
+              if (target.field === "asstManagerId") return lead.asstManagerId._id;
+              if (target.field === "teamLeadId") return lead.teamLeadId._id;
+              if (target.field === "employeeId") return lead.employeeId._id;
               return null;
             })
         );
@@ -53,7 +69,7 @@ export default function BulkAssignModal({ leadIds, onClose, onDone }) {
       })
       .catch(() => setOptions([]))
       .finally(() => setLoading(false));
-  }, [target, user.role]);
+  }, [target, user.role, targetRole, isSuperAdmin]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -79,13 +95,24 @@ export default function BulkAssignModal({ leadIds, onClose, onDone }) {
 
   if (!target) return null;
 
-  return (
+return (
     <Modal title={`Bulk Assign to ${target.label}`} onClose={onClose} wide>
       <form onSubmit={submit} className="space-y-4">
         {error && <div className="text-sm text-rose-600 bg-rose-50 rounded-lg px-3 py-2">{error}</div>}
         <div className="text-sm text-slate-600">
           Assigning <strong>{leadIds.length}</strong> selected lead{leadIds.length === 1 ? "" : "s"} to {ROLE_LABELS[target.role] || target.label}.
         </div>
+
+        {isSuperAdmin && (
+          <div>
+            <label className="text-xs font-medium text-slate-500">Assign to role</label>
+            <select className="input w-full mt-1" value={targetRole} onChange={(e) => setTargetRole(e.target.value)}>
+              {SUPER_ADMIN_ROLES.map((r) => (
+                <option key={r.role} value={r.role}>{r.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {loading ? (
           <div className="text-sm text-slate-500">Loading team members...</div>

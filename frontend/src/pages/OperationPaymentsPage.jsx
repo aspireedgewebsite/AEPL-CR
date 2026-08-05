@@ -22,7 +22,7 @@ export default function OperationPaymentsPage() {
 
   return (
     <div>
-      <Navbar title="Payments & Invoices" subtitle="Each payment sent by a Manager appears here for invoicing" />
+<Navbar title="Payments & Invoices" subtitle="Each payment submitted by Sales appears here for invoicing" />
       <div className="p-8">
         <div className="card overflow-hidden">
           <table className="w-full text-sm">
@@ -32,7 +32,9 @@ export default function OperationPaymentsPage() {
                 <th className="text-left px-4 py-3">Mobile</th>
                 <th className="text-left px-4 py-3">Program / Domain</th>
                 <th className="text-left px-4 py-3">Installment</th>
-                <th className="text-left px-4 py-3">Amount</th>
+                <th className="text-left px-4 py-3">Amount (Received)</th>
+                <th className="text-left px-4 py-3">Finalized</th>
+                <th className="text-left px-4 py-3">Pending</th>
                 <th className="text-left px-4 py-3">Invoice #</th>
                 <th className="text-left px-4 py-3"></th>
               </tr>
@@ -45,6 +47,14 @@ export default function OperationPaymentsPage() {
                   <td className="px-4 py-3 text-slate-600">{p.leadId?.program} / {p.leadId?.domain}</td>
                   <td className="px-4 py-3">#{p.installmentNumber}</td>
                   <td className="px-4 py-3">₹{p.amount.toLocaleString("en-IN")}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {p.leadId?.totalAgreedAmount ? `₹${p.leadId.totalAgreedAmount.toLocaleString("en-IN")}` : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {p.leadId?.totalAgreedAmount
+                      ? `₹${Math.max(0, p.leadId.totalAgreedAmount - p.leadId.totalPaidAmount).toLocaleString("en-IN")}`
+                      : "—"}
+                  </td>
                   <td className="px-4 py-3">
                     {p.locked ? (
                       <span className="font-medium text-ink">{p.invoiceNumber}</span>

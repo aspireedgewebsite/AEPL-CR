@@ -37,11 +37,13 @@ export default function SuperAdminPayments() {
       <div className="p-8">
         <div className="card overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+<thead className="bg-slate-50 text-xs uppercase text-slate-500">
               <tr>
                 <th className="text-left px-4 py-3">Lead</th>
                 <th className="text-left px-4 py-3">#</th>
-                <th className="text-left px-4 py-3">Amount</th>
+                <th className="text-left px-4 py-3">Finalized</th>
+                <th className="text-left px-4 py-3">Received</th>
+                <th className="text-left px-4 py-3">Pending</th>
                 <th className="text-left px-4 py-3">UTR</th>
                 <th className="text-left px-4 py-3">Invoice #</th>
                 <th className="text-left px-4 py-3">Locked</th>
@@ -51,14 +53,22 @@ export default function SuperAdminPayments() {
             <tbody>
               {payments.map((p) => (
                 <tr key={p._id} className="border-t border-slate-100">
-                  <td className="px-4 py-3 font-medium text-ink">{p.leadId?.name}</td>
+<td className="px-4 py-3 font-medium text-ink">{p.leadId?.name}</td>
                   <td className="px-4 py-3">{p.installmentNumber}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {p.leadId?.totalAgreedAmount ? `₹${p.leadId.totalAgreedAmount.toLocaleString("en-IN")}` : "—"}
+                  </td>
                   <td className="px-4 py-3">
                     {editingId === p._id ? (
                       <input className="input" value={editForm.amount} onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })} />
                     ) : (
                       `₹${p.amount.toLocaleString("en-IN")}`
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {p.leadId?.totalAgreedAmount
+                      ? `₹${Math.max(0, p.leadId.totalAgreedAmount - p.leadId.totalPaidAmount).toLocaleString("en-IN")}`
+                      : "—"}
                   </td>
                   <td className="px-4 py-3">
                     {editingId === p._id ? (

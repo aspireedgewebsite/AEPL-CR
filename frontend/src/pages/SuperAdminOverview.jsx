@@ -10,6 +10,7 @@ export default function SuperAdminOverview() {
   const [stats, setStats] = useState(null);
   const [monthly, setMonthly] = useState([]);
   const [yearly, setYearly] = useState([]);
+  const [daily, setDaily] = useState([]);
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState("");
 
@@ -22,7 +23,15 @@ export default function SuperAdminOverview() {
     api.get("/dashboard/monthly", { params: { year } }).then((res) =>
       setMonthly(res.data.data.map((d) => ({ ...d, name: MONTH_NAMES[d.month - 1] })))
     );
-  }, [year]);
+    if (month) {
+      api
+        .get("/dashboard/daily", { params: { year, month } })
+        .then((res) => setDaily(res.data.data.map((d) => ({ ...d, name: String(d.day) }))))
+        .catch(() => setDaily([]));
+    } else {
+      setDaily([]);
+    }
+  }, [year, month]);
 
   return (
     <div>
@@ -55,7 +64,7 @@ action={
           </div>
         )}
 
-        <div className="card p-5">
+<div className="card p-5">
           <h3 className="font-display font-semibold text-ink mb-4">Leads & Conversions — {year} (Month wise)</h3>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={monthly}>
@@ -69,6 +78,26 @@ action={
             </LineChart>
           </ResponsiveContainer>
         </div>
+
+        {month && daily.length > 0 && (
+          <div className="card p-5">
+            <h3 className="font-display font-semibold text-ink mb-4">
+              Daily Track — {MONTH_NAMES[Number(month) - 1]} {year} (Day-wise)
+            </h3>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={daily}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#E7EBEA" />
+                <XAxis dataKey="name" fontSize={11} />
+                <YAxis fontSize={12} />
+                <Tooltip formatter={(v) => (typeof v === "number" && daily[0]?.revenue !== undefined ? `₹${v.toLocaleString("en-IN")}` : v)} />
+                <Legend />
+                <Line type="monotone" dataKey="totalLeads" name="Total Leads" stroke="#2F7A6F" strokeWidth={2} />
+                <Line type="monotone" dataKey="converted" name="Converted" stroke="#C1673F" strokeWidth={2} />
+<Line type="monotone" dataKey="revenue" name="Revenue" stroke="#E0A526" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
 
         <div className="card p-5">
           <h3 className="font-display font-semibold text-ink mb-4">Revenue — {year} (Month wise)</h3>

@@ -41,7 +41,7 @@ export default function LeadsPage({ title = "Leads", subtitle }) {
 
   const canUpload = ["super_admin", "manager", "asst_manager"].includes(user.role);
   const canCreate = ["super_admin", "manager", "asst_manager", "team_lead", "employee"].includes(user.role);
-  const canBulkAssign = ["manager", "asst_manager", "team_lead"].includes(user.role);
+const canBulkAssign = ["super_admin", "manager", "asst_manager", "team_lead"].includes(user.role);
   const canBulkDelete = ["super_admin", "manager"].includes(user.role);
 
   const roleFieldMap = {

@@ -87,10 +87,10 @@ const sendPaymentToOperation = async (req, res) => {
 // GET /api/payments/operation   (Operation dept inbox: payments sent to them)
 const getOperationPayments = async (req, res) => {
   try {
-    const payments = await Payment.find({ sentToOperation: true })
+const payments = await Payment.find({ sentToOperation: true })
       .sort({ sentToOperationAt: -1 })
       .populate("leadId", "name mobile email program domain totalPaidAmount totalAgreedAmount")
-      .populate("submittedBy sentToOperationBy", "name role");
+.populate("submittedBy sentToOperationBy", "name role");
     res.json({ payments });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -161,9 +161,9 @@ const deletePayment = async (req, res) => {
 // GET /api/payments   (super_admin only - every payment in the system)
 const getAllPayments = async (req, res) => {
   try {
-    const payments = await Payment.find({})
+const payments = await Payment.find({})
       .sort({ createdAt: -1 })
-      .populate("leadId", "name mobile email program domain")
+      .populate("leadId", "name mobile email program domain totalPaidAmount totalAgreedAmount")
       .populate("submittedBy sentToOperationBy invoiceSentBy", "name role");
     res.json({ payments });
   } catch (err) {
