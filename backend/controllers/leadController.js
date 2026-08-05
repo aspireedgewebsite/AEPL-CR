@@ -339,6 +339,24 @@ const updateLeadStatus = async (req, res) => {
   }
 };
 
+// PUT /api/leads/:id/program-domain   { program?, domain? }
+// Any logged-in user can edit only the program and/or domain of a lead.
+const updateLeadProgramDomain = async (req, res) => {
+  try {
+    const { program, domain } = req.body;
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    if (program !== undefined) lead.program = String(program).trim();
+    if (domain !== undefined) lead.domain = String(domain).trim();
+    await lead.save();
+
+    res.json({ lead });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // PUT /api/leads/:id/send-to-lms
 // employee / team_lead / asst_manager / manager can queue a converted lead into LMS.
 // manager / asst_manager can then approve the final handoff to operation.
@@ -447,6 +465,7 @@ module.exports = {
   deleteLead,
   restoreLead,
   updateLeadStatus,
+  updateLeadProgramDomain,
   sendToOperationLMS,
   sendToPaymentInvoice,
   updateLmsAction,

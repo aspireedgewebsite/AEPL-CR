@@ -78,12 +78,33 @@ export default function LeadDetailModal({ lead, onClose, onUpdated, onDeleted })
     }
   };
 
-  const sendPaymentToOperation = async (paymentId) => {
+const sendPaymentToOperation = async (paymentId) => {
     try {
       const res = await api.put(`/payments/${paymentId}/send-to-operation`);
       setPayments(payments.map((p) => (p._id === paymentId ? res.data.payment : p)));
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send to Operation");
+    }
+  };
+
+  // ----- Program / Domain edit (all roles) -----
+  const [pdForm, setPdForm] = useState({
+    program: current.program || "",
+    domain: current.domain || "",
+  });
+  const [pdSaving, setPdSaving] = useState(false);
+  const saveProgramDomain = async (e) => {
+    e.preventDefault();
+    setPdSaving(true);
+    setError("");
+    try {
+      const res = await api.put(`/leads/${current._id}/program-domain`, pdForm);
+      setCurrent(res.data.lead);
+      onUpdated && onUpdated(res.data.lead);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to update program/domain");
+    } finally {
+      setPdSaving(false);
     }
   };
 
@@ -169,9 +190,23 @@ export default function LeadDetailModal({ lead, onClose, onUpdated, onDeleted })
             <Info label="Final Amount (Agreed)" value={`₹${(current.totalAgreedAmount || 0).toLocaleString("en-IN")}`} />
             <Info label="Total Paid" value={`₹${(current.totalPaidAmount || 0).toLocaleString("en-IN")}`} />
             <Info label="Pending" value={`₹${Math.max(0, (current.totalAgreedAmount || 0) - (current.totalPaidAmount || 0)).toLocaleString("en-IN")}`} />
-            <Info label="Installments" value={`${current.installmentsCount} / 10`} />
+<Info label="Installments" value={`${current.installmentsCount} / 10`} />
             <Info label="Source" value={current.source} />
           </div>
+
+          <form onSubmit={saveProgramDomain} className="card p-4 grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-xs font-medium text-slate-500">Program</label>
+              <input className="input mt-1" value={pdForm.program} onChange={(e) => setPdForm({ ...pdForm, program: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-500">Domain</label>
+              <input className="input mt-1" value={pdForm.domain} onChange={(e) => setPdForm({ ...pdForm, domain: e.target.value })} />
+            </div>
+            <button type="submit" className="btn-secondary col-span-2" disabled={pdSaving}>
+              {pdSaving ? "Saving..." : "Save Program / Domain"}
+            </button>
+          </form>
           {canSendToLms && (
             <button onClick={sendToLms} className="btn-primary mt-3">
               Send Converted Lead to LMS Queue

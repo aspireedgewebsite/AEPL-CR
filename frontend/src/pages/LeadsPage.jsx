@@ -8,6 +8,8 @@ import LeadDetailModal from "../components/LeadDetailModal";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
+const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
 export default function LeadsPage({ title = "Leads", subtitle }) {
   const { user } = useAuth();
   const [leads, setLeads] = useState([]);
@@ -20,17 +22,21 @@ export default function LeadsPage({ title = "Leads", subtitle }) {
   const [assignmentFilter, setAssignmentFilter] = useState("all");
   const [assignedRoleFilter, setAssignedRoleFilter] = useState("all");
   const [assignedUserFilter, setAssignedUserFilter] = useState("");
-  const [allUsers, setAllUsers] = useState([]);
+const [allUsers, setAllUsers] = useState([]);
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState("");
 
   const load = async () => {
     setLoading(true);
-    const res = await api.get("/leads", { params: query ? { q: query } : {} });
+    const params = { year, month: month || undefined };
+    if (query) params.q = query;
+    const res = await api.get("/leads", { params });
     setLeads(res.data.leads);
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [query]);
+  useEffect(() => { load(); }, [query, year, month]);
 
   useEffect(() => {
     api
@@ -117,12 +123,23 @@ const canBulkAssign = ["super_admin", "manager", "asst_manager", "team_lead"].in
       />
       <div className="p-8">
         <div className="flex flex-wrap gap-2 mb-4">
-          <input
+<input
             className="input max-w-sm"
             placeholder="Search by name, mobile, or email..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
+          <select className="input w-32" value={year} onChange={(e) => setYear(Number(e.target.value))}>
+            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 4 + i).map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+          <select className="input w-36" value={month} onChange={(e) => setMonth(e.target.value)}>
+            <option value="">All Months</option>
+            {MONTH_NAMES.map((m, idx) => (
+              <option key={m} value={String(idx + 1)}>{m}</option>
+            ))}
+          </select>
           <select className="input max-w-xs" value={assignmentFilter} onChange={(e) => setAssignmentFilter(e.target.value)}>
             <option value="all">All Leads</option>
             <option value="assigned">Assigned Leads</option>

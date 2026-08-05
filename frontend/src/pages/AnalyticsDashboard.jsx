@@ -9,6 +9,8 @@ export default function AnalyticsDashboard({ title = "Analytics", subtitle = "Fo
   const [sources, setSources] = useState([]);
   const [targets, setTargets] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState(new Date().getMonth() + 1);
 
   useEffect(() => {
     Promise.all([
@@ -16,7 +18,7 @@ export default function AnalyticsDashboard({ title = "Analytics", subtitle = "Fo
       api.get("/analytics/funnel"),
       api.get("/analytics/leaderboard"),
       api.get("/analytics/source-performance"),
-      api.get("/analytics/targets"),
+      api.get("/analytics/targets", { params: { year, month } }),
     ])
       .then(([alertsRes, funnelRes, leaderboardRes, sourcesRes, targetsRes]) => {
         setAlerts(alertsRes.data);
@@ -26,14 +28,27 @@ export default function AnalyticsDashboard({ title = "Analytics", subtitle = "Fo
         setTargets(targetsRes.data);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [year, month]);
 
   if (loading) return <div className="p-8 text-slate-500">Loading analytics...</div>;
 
-  return (
+return (
     <div>
       <Navbar title={title} subtitle={subtitle} />
       <div className="p-8 space-y-6">
+        <div className="flex flex-wrap gap-2 mb-2">
+          <div className="text-sm text-slate-500 self-center">Track by:</div>
+          <select className="input w-32" value={year} onChange={(e) => setYear(Number(e.target.value))}>
+            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 4 + i).map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+          <select className="input w-36" value={month} onChange={(e) => setMonth(Number(e.target.value))}>
+            {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map((m, idx) => (
+              <option key={m} value={idx + 1}>{m}</option>
+            ))}
+          </select>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card title="Due Today" value={alerts?.dueTodayCount || 0} tone="brand" />
           <Card title="Overdue" value={alerts?.overdueCount || 0} tone="rose" />
