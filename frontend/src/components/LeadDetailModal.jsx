@@ -50,17 +50,29 @@ export default function LeadDetailModal({ lead, onClose, onUpdated, onDeleted })
     }
   };
 
-  // ----- Payments -----
-  const [payForm, setPayForm] = useState({ amount: "", program: current.program || "", domain: current.domain || "", utr: "" });
+// ----- Payments -----
+  const [payForm, setPayForm] = useState({
+    amount: "",
+    agreedAmount: current.totalAgreedAmount || "",
+    program: current.program || "",
+    domain: current.domain || "",
+    utr: "",
+  });
   const submitPayment = async (e) => {
     e.preventDefault();
     setError("");
+    const payload = {};
+    if (payForm.amount !== "") payload.amount = payForm.amount;
+    if (payForm.agreedAmount !== "") payload.agreedAmount = payForm.agreedAmount;
+    if (payForm.program) payload.program = payForm.program;
+    if (payForm.domain) payload.domain = payForm.domain;
+    if (payForm.utr) payload.utr = payForm.utr;
     try {
-      const res = await api.post("/payments", { leadId: current._id, ...payForm });
+      const res = await api.post("/payments", { leadId: current._id, ...payload });
       setPayments([...payments, res.data.payment]);
       setCurrent(res.data.lead);
       onUpdated && onUpdated(res.data.lead);
-      setPayForm({ amount: "", program: current.program || "", domain: current.domain || "", utr: "" });
+      setPayForm({ amount: "", agreedAmount: res.data.lead.totalAgreedAmount || "", program: res.data.lead.program || "", domain: res.data.lead.domain || "", utr: "" });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to add payment");
     }
@@ -152,9 +164,11 @@ export default function LeadDetailModal({ lead, onClose, onUpdated, onDeleted })
               Delete Lead
             </button>
           )}
-          <div className="grid grid-cols-2 gap-3">
+<div className="grid grid-cols-2 gap-3">
             <Info label="Status" value={current.status.replace("_", " ")} />
+            <Info label="Final Amount (Agreed)" value={`₹${(current.totalAgreedAmount || 0).toLocaleString("en-IN")}`} />
             <Info label="Total Paid" value={`₹${(current.totalPaidAmount || 0).toLocaleString("en-IN")}`} />
+            <Info label="Pending" value={`₹${Math.max(0, (current.totalAgreedAmount || 0) - (current.totalPaidAmount || 0)).toLocaleString("en-IN")}`} />
             <Info label="Installments" value={`${current.installmentsCount} / 10`} />
             <Info label="Source" value={current.source} />
           </div>
@@ -239,11 +253,15 @@ export default function LeadDetailModal({ lead, onClose, onUpdated, onDeleted })
       {tab === "Payments" && (
         <div className="space-y-4">
           {canAddPayment && (
-            <form onSubmit={submitPayment} className="card p-4 grid grid-cols-2 gap-2">
-              <input required type="number" min="0" className="input" placeholder="Amount" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} />
+<form onSubmit={submitPayment} className="card p-4 grid grid-cols-2 gap-2">
+              <input required type="number" min="0" className="input" placeholder="Final Amount (Agreed)" value={payForm.agreedAmount} onChange={(e) => setPayForm({ ...payForm, agreedAmount: e.target.value })} />
+              <input required type="number" min="0" className="input" placeholder="Amount Paid" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} />
               <input required className="input" placeholder="Program" value={payForm.program} onChange={(e) => setPayForm({ ...payForm, program: e.target.value })} />
               <input required className="input" placeholder="Domain" value={payForm.domain} onChange={(e) => setPayForm({ ...payForm, domain: e.target.value })} />
               <input required className="input" placeholder="UTR number" value={payForm.utr} onChange={(e) => setPayForm({ ...payForm, utr: e.target.value })} />
+              <div className="col-span-2 text-xs text-slate-500">
+                Pending after this payment: ₹{Math.max(0, (Number(payForm.agreedAmount) || 0) - (current.totalPaidAmount || 0) - (Number(payForm.amount) || 0)).toLocaleString("en-IN")}
+              </div>
               <button type="submit" className="btn-primary col-span-2">
                 Add Payment (Installment #{current.installmentsCount + 1} of 10)
               </button>

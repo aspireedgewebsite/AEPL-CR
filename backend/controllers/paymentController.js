@@ -3,11 +3,12 @@ const Lead = require("../models/Lead");
 
 const MAX_INSTALLMENTS = 10;
 
-// POST /api/payments   { leadId, amount, program, domain, utr, paymentDate }
-// Employee / team_lead / asst_manager add a payment against a converted lead
+// POST /api/payments   { leadId, amount, program, domain, utr, paymentDate, agreedAmount }
+// Employee / team_lead / asst_manager add a payment against a converted lead.
+// Every payment + UTR submission is automatically sent to the Operation invoice list.
 const addPayment = async (req, res) => {
   try {
-    const { leadId, amount, program, domain, utr, paymentDate } = req.body;
+    const { leadId, amount, program, domain, utr, paymentDate, agreedAmount } = req.body;
     if (!leadId || !amount || !program || !domain || !utr) {
       return res.status(400).json({ message: "leadId, amount, program, domain, utr are required" });
     }
@@ -29,12 +30,20 @@ const addPayment = async (req, res) => {
       utr,
       paymentDate: paymentDate || new Date(),
       submittedBy: req.user._id,
+      // Auto route this payment straight to the Operation invoice inbox.
+      sentToOperation: true,
+      sentToOperationAt: new Date(),
+      sentToOperationBy: req.user._id,
     });
 
     lead.converted = true;
     lead.status = "converted";
     lead.totalPaidAmount += Number(amount);
     lead.installmentsCount = nextInstallment;
+    // Finalize the agreed amount if provided (2nd submission onward, or when set).
+    if (agreedAmount !== undefined && agreedAmount !== null && agreedAmount !== "") {
+      lead.totalAgreedAmount = Number(agreedAmount);
+    }
     if (!lead.program) lead.program = program;
     if (!lead.domain) lead.domain = domain;
     await lead.save();

@@ -41,8 +41,10 @@ export default function LeadsTable({ leads, onOpen, selectedLeadIds = [], onTogg
             <th className="text-left px-4 py-3">Mobile</th>
             <th className="text-left px-4 py-3">Program / Domain</th>
             <th className="text-left px-4 py-3">Status</th>
-            <th className="text-left px-4 py-3">Calls</th>
+<th className="text-left px-4 py-3">Calls</th>
+            <th className="text-left px-4 py-3">Agreed</th>
             <th className="text-left px-4 py-3">Paid</th>
+            <th className="text-left px-4 py-3">Pending</th>
             <th className="text-left px-4 py-3">Assigned To</th>
             <th className="text-left px-4 py-3">Last Contact</th>
             <th className="text-left px-4 py-3">Next Follow-up</th>
@@ -74,9 +76,15 @@ export default function LeadsTable({ leads, onOpen, selectedLeadIds = [], onTogg
                   {lead.status.replace("_", " ")}
                 </span>
               </td>
-              <td className="px-4 py-3 text-slate-600">{lead.callAttemptCount || 0}</td>
+<td className="px-4 py-3 text-slate-600">{lead.callAttemptCount || 0}</td>
+              <td className="px-4 py-3 text-slate-600">
+                {lead.totalAgreedAmount ? `₹${lead.totalAgreedAmount.toLocaleString("en-IN")}` : "—"}
+              </td>
               <td className="px-4 py-3 text-slate-600">
                 {lead.totalPaidAmount ? `₹${lead.totalPaidAmount.toLocaleString("en-IN")}` : "—"}
+              </td>
+              <td className="px-4 py-3 text-slate-600">
+                {lead.totalAgreedAmount ? `₹${Math.max(0, lead.totalAgreedAmount - lead.totalPaidAmount).toLocaleString("en-IN")}` : "—"}
               </td>
               <td className="px-4 py-3 text-slate-600">
                 {lead.employeeId?.name || lead.teamLeadId?.name || lead.asstManagerId?.name || lead.managerId?.name || "Unassigned"}

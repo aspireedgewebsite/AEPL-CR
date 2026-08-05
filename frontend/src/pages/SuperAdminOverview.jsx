@@ -11,11 +11,12 @@ export default function SuperAdminOverview() {
   const [monthly, setMonthly] = useState([]);
   const [yearly, setYearly] = useState([]);
   const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState("");
 
   useEffect(() => {
-    api.get("/dashboard/summary").then((res) => setStats(res.data));
+    api.get("/dashboard/summary", { params: { year, month: month || undefined } }).then((res) => setStats(res.data));
     api.get("/dashboard/yearly").then((res) => setYearly(res.data.data));
-  }, []);
+  }, [year, month]);
 
   useEffect(() => {
     api.get("/dashboard/monthly", { params: { year } }).then((res) =>
@@ -28,12 +29,20 @@ export default function SuperAdminOverview() {
       <Navbar
         title="Overview & Graphs"
         subtitle="Company-wide performance, month & year wise"
-        action={
-          <select className="input w-32" value={year} onChange={(e) => setYear(Number(e.target.value))}>
-            {yearly.map((y) => (
-              <option key={y.year} value={y.year}>{y.year}</option>
-            ))}
-          </select>
+action={
+          <div className="flex gap-2">
+            <select className="input w-36" value={month} onChange={(e) => setMonth(e.target.value)}>
+              <option value="">All Months</option>
+              {MONTH_NAMES.map((m, idx) => (
+                <option key={m} value={String(idx + 1)}>{m}</option>
+              ))}
+            </select>
+            <select className="input w-32" value={year} onChange={(e) => setYear(Number(e.target.value))}>
+              {yearly.map((y) => (
+                <option key={y.year} value={y.year}>{y.year}</option>
+              ))}
+            </select>
+          </div>
         }
       />
       <div className="p-8 space-y-6">
