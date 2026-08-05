@@ -22,3 +22,8 @@
 ## Round 6 — Sample template download in Bulk Upload
 
 - [x] 11. Added a "⬇ Download Sample Template (.csv)" button in `BulkUploadModal.jsx` that generates and downloads a sample CSV with the correct headers (name, mobile, email, program, domain) and an example row.
+
+## Round 7 — Super Admin can create another Super Admin
+
+- [x] 12. Backend `userController.js`: added `super_admin` to the super_admin's `CREATION_RULES` so a super admin can create another super admin. Also set `finalParentId = null` for created super admins (no hierarchy parent).
+- [x] 13. Frontend `UserFormModal.jsx`: added `super_admin` to the super admin's creation options and added a "Super Admin" role label.

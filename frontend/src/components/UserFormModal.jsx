@@ -4,12 +4,13 @@ import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 const CREATION_OPTIONS = {
-  super_admin: ["manager", "asst_manager", "team_lead", "employee", "operation"],
+  super_admin: ["super_admin", "manager", "asst_manager", "team_lead", "employee", "operation"],
   manager: ["asst_manager", "team_lead", "employee", "operation"],
   asst_manager: ["team_lead", "employee"],
 };
 
 const ROLE_LABELS = {
+  super_admin: "Super Admin",
   manager: "Manager (Admin-1)",
   asst_manager: "Asst. Manager (Admin-2)",
   team_lead: "Team Lead",

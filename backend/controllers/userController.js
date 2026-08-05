@@ -3,7 +3,7 @@ const { getDescendantIds } = require("../utils/hierarchy");
 
 // Which roles each role is allowed to create
 const CREATION_RULES = {
-  super_admin: ["manager", "asst_manager", "team_lead", "employee", "operation"],
+  super_admin: ["super_admin", "manager", "asst_manager", "team_lead", "employee", "operation"],
   manager: ["asst_manager", "team_lead", "employee", "operation"],
   asst_manager: ["team_lead", "employee"],
   team_lead: [],
@@ -23,8 +23,13 @@ const createUser = async (req, res) => {
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) return res.status(400).json({ message: "Email already in use" });
 
-    let finalParentId = parentId || req.user._id;
+let finalParentId = parentId || req.user._id;
     let resolvedTeamName = teamName || "";
+
+    // A super_admin created by another super_admin has no hierarchy parent.
+    if (role === "super_admin") {
+      finalParentId = null;
+    }
 
     if (req.user.role === "manager") {
       if (role === "asst_manager") {
