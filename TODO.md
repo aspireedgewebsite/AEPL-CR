@@ -18,3 +18,7 @@
 ## Round 5 — Lead visibility for unassigned / super-admin-created leads
 
 - [x] 10. Updated `leadVisibilityFilter` so managers, asst managers, and team leads can also see all **unassigned** leads (created by super admin or anyone), enabling them to claim/assign them down the chain. Once a lead is assigned, it no longer matches the "unassigned" filter and only appears in the assignee's chain. Employee visibility unchanged.
+
+## Round 6 — Sample template download in Bulk Upload
+
+- [x] 11. Added a "⬇ Download Sample Template (.csv)" button in `BulkUploadModal.jsx` that generates and downloads a sample CSV with the correct headers (name, mobile, email, program, domain) and an example row.

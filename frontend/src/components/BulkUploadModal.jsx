@@ -2,6 +2,34 @@ import React, { useState } from "react";
 import Modal from "./Modal";
 import api from "../services/api";
 
+function downloadSample() {
+  const headers = ["name", "mobile", "email", "program", "domain"];
+  const example = [
+    "Rahul Sharma",
+    "9876543210",
+    "rahul@example.com",
+    "B. Tech in CSE",
+    "Amity University Mumbai",
+  ];
+  const lines = [
+    headers.join(","),
+    example.map((v) => `"${v}"`).join(","),
+    "",
+    "# Add one lead per row below. Columns: name, mobile, email, program, domain",
+    "# name and mobile are required. Header names are case-insensitive.",
+  ];
+  const content = lines.join("\n");
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "leads-bulk-upload-template.csv";
+document.body.appendChild(a);
+  a.click();
+  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
 export default function BulkUploadModal({ onClose, onDone }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -31,9 +59,16 @@ export default function BulkUploadModal({ onClose, onDone }) {
   return (
     <Modal title="Bulk Upload Leads (CSV / Excel)" onClose={onClose}>
       <form onSubmit={submit} className="space-y-4">
-        <p className="text-sm text-slate-500">
+<p className="text-sm text-slate-500">
           File must have columns: <strong>name, mobile, email, program, domain</strong>. Header names are case-insensitive.
         </p>
+        <button
+          type="button"
+          onClick={downloadSample}
+          className="btn-secondary text-sm"
+        >
+          ⬇ Download Sample Template (.csv)
+        </button>
         {error && <div className="text-sm text-rose-600 bg-rose-50 rounded-lg px-3 py-2">{error}</div>}
         <input
           type="file"
