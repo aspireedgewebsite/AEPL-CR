@@ -27,3 +27,10 @@
 
 - [x] 12. Backend `userController.js`: added `super_admin` to the super_admin's `CREATION_RULES` so a super admin can create another super admin. Also set `finalParentId = null` for created super admins (no hierarchy parent).
 - [x] 13. Frontend `UserFormModal.jsx`: added `super_admin` to the super admin's creation options and added a "Super Admin" role label.
+
+## Round 8 — User delete persistence + Edit option
+
+- [x] 14. Backend `getUsers`: fixed so soft-deleted users are excluded for all roles (previously super_admin used `filter = {}` and deleted users reappeared on refresh).
+- [x] 15. Backend `updateUser`: added password-reset support (super_admin only) so an edit modal can reset a user's login password.
+- [x] 16. Frontend: created `UserEditModal.jsx` to edit name, phone, team name (asst_manager), monthly target, and optional password reset.
+- [x] 17. Frontend `UsersPage.jsx`: added an "Edit" button (super_admin) next to Delete, and wired the edit modal.

@@ -90,14 +90,14 @@ const getUsers = async (req, res) => {
   try {
     let filter = { isDeleted: false };
     if (req.user.role === "super_admin") {
-      filter = {};
+      filter = { isDeleted: false };
     } else if (req.user.role === "operation") {
-      filter = { role: "operation" };
+      filter = { role: "operation", isDeleted: false };
     } else if (req.user.role === "asst_manager" && req.query.role === "employee") {
-      filter = { role: "employee" };
+      filter = { role: "employee", isDeleted: false };
     } else {
       const ids = await getDescendantIds(req.user._id);
-      filter = { _id: { $in: ids } };
+      filter = { _id: { $in: ids }, isDeleted: false };
     }
     if (req.query.role) filter.role = req.query.role;
 
@@ -116,7 +116,7 @@ const updateUser = async (req, res) => {
 
     // Only super_admin, manager (over asst_manager placement) or asst_manager
     // (over employee->team_lead placement) may reassign hierarchy
-    const { name, phone, teamName, parentId, isActive, monthlyTarget } = req.body;
+const { name, phone, teamName, parentId, isActive, monthlyTarget, password } = req.body;
     if (name !== undefined) target.name = name;
     if (phone !== undefined) target.phone = phone;
     if (teamName !== undefined) target.teamName = teamName;
@@ -125,6 +125,13 @@ const updateUser = async (req, res) => {
     }
     if (isActive !== undefined && ["super_admin", "manager"].includes(req.user.role)) {
       target.isActive = isActive;
+    }
+    // Password reset (super_admin only)
+    if (password !== undefined && ["super_admin"].includes(req.user.role)) {
+      if (String(password).length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters" });
+      }
+      target.password = password;
     }
     if (parentId !== undefined) {
       const allowedReassign =

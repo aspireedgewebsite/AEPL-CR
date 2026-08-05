@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
 import UserFormModal from "../components/UserFormModal";
+import UserEditModal from "../components/UserEditModal";
 import api from "../services/api";
 import { useAuth, ROLE_LABELS } from "../context/AuthContext";
 
@@ -9,6 +10,7 @@ export default function UsersPage({ title = "Team & Users" }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
   const [parentOptions, setParentOptions] = useState({ asst_manager: [], team_lead: [] });
 
   const load = async () => {
@@ -199,10 +201,15 @@ export default function UsersPage({ title = "Team & Users" }) {
                           {u.isActive ? "Deactivate" : "Activate"}
                         </button>
                       )}
-                      {user.role === "super_admin" && (
-                        <button onClick={() => deleteUser(u)} className="text-xs font-medium text-rose-500 hover:text-rose-700">
-                          Delete
-                        </button>
+{user.role === "super_admin" && (
+                        <>
+                          <button onClick={() => setEditingUser(u)} className="text-xs font-medium text-brand-600 hover:text-brand-700">
+                            Edit
+                          </button>
+                          <button onClick={() => deleteUser(u)} className="text-xs font-medium text-rose-500 hover:text-rose-700">
+                            Delete
+                          </button>
+                        </>
                       )}
                     </td>
                   </tr>
@@ -213,7 +220,14 @@ export default function UsersPage({ title = "Team & Users" }) {
           </>
         )}
       </div>
-      {showForm && <UserFormModal onClose={() => setShowForm(false)} onCreated={() => load()} />}
+{showForm && <UserFormModal onClose={() => setShowForm(false)} onCreated={() => load()} />}
+      {editingUser && (
+        <UserEditModal
+          user={editingUser}
+          onClose={() => setEditingUser(null)}
+          onUpdated={(updated) => setUsers(users.map((x) => (x._id === updated._id ? updated : x)))}
+        />
+      )}
     </div>
   );
 }
