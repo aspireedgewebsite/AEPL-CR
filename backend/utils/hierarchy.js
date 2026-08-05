@@ -25,11 +25,21 @@ async function leadVisibilityFilter(user) {
   const visibleIds = await getDescendantIds(user._id);
   const scopeIds = visibleIds.concat(user._id);
 
+  // Unassigned leads (no assignment chain yet) are visible to anyone who can assign,
+  // so super-admin-created / unassigned leads appear in manager/asst_manager/team_lead lists.
+  const unassigned = {
+    managerId: null,
+    asstManagerId: null,
+    teamLeadId: null,
+    employeeId: null,
+  };
+
   if (user.role === "manager") {
     return {
       $or: [
         { managerId: { $in: scopeIds } },
         { createdBy: { $in: scopeIds } },
+        unassigned,
       ],
     };
   }
@@ -38,6 +48,7 @@ async function leadVisibilityFilter(user) {
       $or: [
         { asstManagerId: { $in: scopeIds } },
         { createdBy: { $in: scopeIds } },
+        unassigned,
       ],
     };
   }
@@ -46,6 +57,7 @@ async function leadVisibilityFilter(user) {
       $or: [
         { teamLeadId: { $in: scopeIds } },
         { createdBy: { $in: scopeIds } },
+        unassigned,
       ],
     };
   }

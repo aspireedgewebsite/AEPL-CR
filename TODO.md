@@ -14,3 +14,7 @@
 
 - [x] 8. Fixed CSV parser to auto-detect tab vs comma delimiter (uploaded data was tab-separated, so every row parsed as one column and skipped as "Missing name or mobile").
 - [x] 9. Normalize mobile numbers by removing spaces during upload for cleaner storage & duplicate detection.
+
+## Round 5 — Lead visibility for unassigned / super-admin-created leads
+
+- [x] 10. Updated `leadVisibilityFilter` so managers, asst managers, and team leads can also see all **unassigned** leads (created by super admin or anyone), enabling them to claim/assign them down the chain. Once a lead is assigned, it no longer matches the "unassigned" filter and only appears in the assignee's chain. Employee visibility unchanged.
