@@ -14,6 +14,7 @@ const {
   deleteLead,
   restoreLead,
   updateLeadStatus,
+  updateLeadProgramDomain,
   sendToOperationLMS,
   sendToPaymentInvoice,
   updateLmsAction,
